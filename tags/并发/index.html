@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Archives | </title>
+  <title>并发 | </title>
   <meta name="author" content="Tullyliu">
   
   
@@ -47,7 +47,7 @@
 </header>
   <div id="content" class="inner">
     <div id="main-col" class="alignleft"><div id="wrapper">
-<h2 class="archive-title">Archives</h2>
+<h2 class="archive-title tag">并发</h2>
 
 
   
@@ -177,122 +177,6 @@
 <p>注意此处使用了sychronized,仍然不能使用HashedMap代替ConcurrentHashMap
 因为这种写法有多线程同时访问Map的get和put方法的可能,
 而HashedMap的get和put方法并发环境下也是会出错的.</p>
-
-      
-    </div>
-    <footer>
-      
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-  
-    <article class="post">
-  
-    <div class="gallery">
-  <div class="photoset">
-    
-      <img src="">
-    
-  </div>
-  <div class="control">
-    <div class="prev"></div>
-    <div class="next"></div>
-  </div>
-</div>
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2011-03-20T07:22:19.000Z"><a href="/2011/03/20/mongomgr/">Mar 20 2011</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2011/03/20/mongomgr/">MongoDB集群管理-MongoManager</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>MongoManager是一组用于管理MongoDB集群启动和配置的Shell脚本</p>
-<p>目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况
-项目位于<a href="https://github.com/tullyliu/MongoManager" target="_blank">MongoMangager</a></p>
-<p>MongoDB集群管理脚本使用说明</p>
-<h3 id="-">原理</h3>
-<p>利用ssh远程操作其他机器,完成相关操作</p>
-<h3 id="-">准备:</h3>
-<p>选择主控机,执行以下命令完成ssh key复制</p>
-<figure class="highlight [shell]"><table><tr><td class="gutter"><pre>1
-2
-</pre></td><td class="code"><pre><span class="keyword">cd</span> ~/.ssh
-cat id_dsa.pub | ssh user<span class="comment">@remotehost 'cd .ssh;</span>
-</pre></td></tr></table></figure>
-
-<p>脚本需要利用hostname –i获取服务器各自的ip,请确保各个服务器该命令返回的结果正确性</p>
-<h3 id="-">配置说明</h3>
-<p>配置文件为 common.sh和conf.<em>.sh 其中</em>为任意名字,为后续脚本提供参数</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-</pre></td><td class="code"><pre>DBHOSTS=(<span class="string">"domain1 "</span> <span class="string">"domain2"</span>)  <span class="comment">#MongoDB主库的host</span>
-RS_DBHOSTS=(<span class="variable">${DBHOSTS[*]}</span>)      <span class="comment">#MongoDB复制库的host</span>
-AB_DBHOSTS=(<span class="variable">${DBHOSTS[*]}</span>)      <span class="comment">#MongoDB arbiter的host</span>
-CFGHOSTS=(“domain1”)            <span class="comment">#MongoDB config的host</span>
-MSHOSTS=(“domain1” )            <span class="comment">#MongoDB shard的host</span>
-USER=<span class="string">"test"</span>                     <span class="comment">#MongoDB所在服务器的用户</span>
-MDB=<span class="string">"/home/<span class="variable">$USER</span>/mongodb"</span>       <span class="comment">#MongoDB所在服务器的安装路径</span>
-DBPATH=<span class="string">"<span class="variable">$MDB</span>/data/shard"</span>        <span class="comment">#MongodDB数据文件存放</span>
-RS_DBPATH=<span class="string">"<span class="variable">$MDB</span>/data/replica"</span>   <span class="comment">#MongodDB从库数据文件</span>
-AB_DBPATH=<span class="string">"<span class="variable">$MDB</span>/data/arbiter"</span>   <span class="comment">#MongodDB Arbiter数据文件</span>
-CFGPATH=<span class="string">"<span class="variable">$MDB</span>/data/config"</span>      <span class="comment">#MongodDB Config数据文件</span>
-LOGPATH=<span class="string">"<span class="variable">$MDB</span>/data"</span>             <span class="comment">#MongoDB日志目录</span>
-DBPORT=<span class="string">"25050"</span>                  <span class="comment">#MongoDB主库端口</span>
-RS_DBPORT=<span class="string">"25353"</span>               <span class="comment">#MongoDB从库端口</span>
-AB_DBPORT=<span class="string">"25454"</span>               <span class="comment">#MongoDB Arbiter 端口</span>
-CFGPORT=<span class="string">"25151"</span>                 <span class="comment">#MongoDB Config  端口</span>
-MSPORT=<span class="string">"25252"</span>                  <span class="comment">#MongoDB Mongos 端口</span>
-AUTO_SHARD=<span class="literal">false</span>                <span class="comment">#是否自动shard</span>
-</pre></td></tr></table></figure>
-
-<h3 id="-">管理脚本说明</h3>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-7
-</pre></td><td class="code"><pre>sh proc_start_mongodrs<span class="preprocessor">.sh</span> test  <span class="preprocessor">#使用conf.test.sh</span>
-sh proc_config_rs<span class="preprocessor">.sh</span> test       <span class="preprocessor">#配置mongodb的复本集</span>
-sh proc_start_config<span class="preprocessor">.sh</span> test    <span class="preprocessor">#Shard情况下,启动config</span>
-sh proc_start_mongos<span class="preprocessor">.sh</span> test    <span class="preprocessor">#Shard情况下,启动mongos</span>
-sh proc_config_shards<span class="preprocessor">.sh</span> test   <span class="preprocessor">#Shard情况下,配置shard</span>
-sh proc_stop<span class="preprocessor">.sh</span> test            <span class="preprocessor">#安全关闭mongodb集群</span>
-sh proc_manage_clean<span class="preprocessor">.sh</span> test    <span class="preprocessor">#删除mongodb的数据目录</span>
-</pre></td></tr></table></figure>
-
 
       
     </div>

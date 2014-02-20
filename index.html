@@ -65,17 +65,230 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2014-02-20T06:58:02.000Z"><a href="/2014/02/20/hello-world/">Feb 20 2014</a></time>
+        <time datetime="2012-07-20T07:08:05.000Z"><a href="/2012/07/20/concurrenthashmap/">Jul 20 2012</a></time>
       
       
   
-    <h1 class="title"><a href="/2014/02/20/hello-world/">Hello World</a></h1>
+    <h1 class="title"><a href="/2012/07/20/concurrenthashmap/">ConcurrentHashMap的使用技巧</a></h1>
   
 
     </header>
     <div class="entry">
       
-        <p>Welcome to <a href="http://zespia.tw/hexo" target="_blank">Hexo</a>! This is your very first post. Check <a href="http://zespia.tw/hexo/docs" target="_blank">documentation</a> to learn how to use.</p>
+        <p>在日常开发中,资源池是经常遇到的场景,一种简单的实现是按需创建一个资源,然后放入map中缓存起来,后续使用这个资源时直接从map中获取.</p>
+<p>最简单可靠的实现是利用HashedMap+synchronized(或者Lock),这种方式无疑是正确的,但锁的粒度较大,高并发时性能不佳</p>
+<p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性
+参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a>
+主要代码如下</p>
+<figure class="highlight [java]"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="code"><pre><span class="keyword">private</span> ConcurrentMap records = <span class="keyword">new</span> ConcurrentHashMap();
+
+<span class="keyword">private</span> Record getOrCreate(String id) {
+    Record <span class="keyword">rec</span> = records.get(id);
+    <span class="keyword">if</span> (<span class="keyword">rec</span> == <span class="keyword">null</span>) {
+        <span class="comment">// record does not yet exist</span>
+        Record newRec = <span class="keyword">new</span> Record(id);
+        <span class="keyword">rec</span> = records.putIfAbsent(id, newRec);
+        <span class="keyword">if</span> (<span class="keyword">rec</span> == <span class="keyword">null</span>) {
+            <span class="comment">// put succeeded, use new value</span>
+            <span class="keyword">rec</span> = newRec;
+        }
+    }
+    <span class="keyword">return</span> <span class="keyword">rec</span>;
+}
+</pre></td></tr></table></figure>
+
+<p>这种方法直接使用ConcurrentMap,且没有外层的锁,putIfAbsent方法不会重复放入相同key的对象,ConcurrentMap内部实现也保证了内存可见性.
+看起来是基本正确的.而且大部分情况也是可以正常工作的.</p>
+<p>但是这种写法有个致命的问题,那就是</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+</pre></td><td class="code"><pre><span class="keyword">Record</span> newRec = <span class="keyword">new</span> <span class="keyword">Record</span>(id);
+</pre></td></tr></table></figure>
+
+<p>这个地方在并发情况下可能被多次执行.意味着资源被多次创建.如果这个资源没有什么外部依赖,多次创建倒是没有问题,不过当遇到
+依赖外部资源(文件,socket)时,多次创建就会有报错.</p>
+<p>要避免这种资源的多次创建,可以使用double checked的方式实现.虽然double checked由来已久,且有著名的double checked locking问题
+关于此问题(请参见<a href="http://en.wikipedia.org/wiki/Double-checked_locking" target="_blank">DCL</a> 的产生主要是java内存模型导致的,但是使用volatile可以避免lock的问题
+可能早些时候很多著作里都会提到volatile代价太高,但随着jvm发展(1.5以后),volatile的实现也变得轻量高效,具体的论述可以参见<a href="http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#dcl" target="_blank">jsr-133-faq</a> 
+注意页面里划掉的一大段论述</p>
+<p>Double checked最早是为了解决单例模式产生的,目前java的单例模式已经有更好的实现方式,比如static变量(dcl的wiki描述),比如enum单例(参见effective java 2nd)</p>
+<p>但是在资源池场景仍然可以使用Double checked保证我们资源仅被创建一次同时尽量降低同步的代价
+代码如下</p>
+<figure class="highlight [java]"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="code"><pre><span class="keyword">private</span> ConcurrentMap records = <span class="keyword">new</span> ConcurrentHashMap();
+
+<span class="keyword">private</span> Record getOrCreate(String id) {
+    Record <span class="keyword">rec</span> = records.get(id);
+    <span class="keyword">if</span> (<span class="keyword">rec</span> == <span class="keyword">null</span>) {
+        synchronized (this) {
+            <span class="keyword">rec</span> = records.get(id);
+            <span class="keyword">if</span> (<span class="keyword">rec</span> == <span class="keyword">null</span>) {
+                <span class="comment">// record does not yet exist</span>
+                Record newRec = <span class="keyword">new</span> Record(id);
+                <span class="keyword">rec</span> = records.putIfAbsent(id, newRec);
+                <span class="keyword">if</span> (<span class="keyword">rec</span> == <span class="keyword">null</span>) {
+                    <span class="comment">// put succeeded, use new value</span>
+                   <span class="keyword">rec</span> = newRec;
+                }
+            }
+        }
+    }
+    <span class="keyword">return</span> <span class="keyword">rec</span>;
+}
+</pre></td></tr></table></figure>
+
+<p>注意此处使用了sychronized,仍然不能使用HashedMap代替ConcurrentHashMap
+因为这种写法有多线程同时访问Map的get和put方法的可能,
+而HashedMap的get和put方法并发环境下也是会出错的.</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2011-03-20T07:22:19.000Z"><a href="/2011/03/20/mongomgr/">Mar 20 2011</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2011/03/20/mongomgr/">MongoDB集群管理-MongoManager</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>MongoManager是一组用于管理MongoDB集群启动和配置的Shell脚本</p>
+<p>目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况
+项目位于<a href="https://github.com/tullyliu/MongoManager" target="_blank">MongoMangager</a></p>
+<p>MongoDB集群管理脚本使用说明</p>
+<h3 id="-">原理</h3>
+<p>利用ssh远程操作其他机器,完成相关操作</p>
+<h3 id="-">准备:</h3>
+<p>选择主控机,执行以下命令完成ssh key复制</p>
+<figure class="highlight [shell]"><table><tr><td class="gutter"><pre>1
+2
+</pre></td><td class="code"><pre><span class="keyword">cd</span> ~/.ssh
+cat id_dsa.pub | ssh user<span class="comment">@remotehost 'cd .ssh;</span>
+</pre></td></tr></table></figure>
+
+<p>脚本需要利用hostname –i获取服务器各自的ip,请确保各个服务器该命令返回的结果正确性</p>
+<h3 id="-">配置说明</h3>
+<p>配置文件为 common.sh和conf.<em>.sh 其中</em>为任意名字,为后续脚本提供参数</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="code"><pre>DBHOSTS=(<span class="string">"domain1 "</span> <span class="string">"domain2"</span>)  <span class="comment">#MongoDB主库的host</span>
+RS_DBHOSTS=(<span class="variable">${DBHOSTS[*]}</span>)      <span class="comment">#MongoDB复制库的host</span>
+AB_DBHOSTS=(<span class="variable">${DBHOSTS[*]}</span>)      <span class="comment">#MongoDB arbiter的host</span>
+CFGHOSTS=(“domain1”)            <span class="comment">#MongoDB config的host</span>
+MSHOSTS=(“domain1” )            <span class="comment">#MongoDB shard的host</span>
+USER=<span class="string">"test"</span>                     <span class="comment">#MongoDB所在服务器的用户</span>
+MDB=<span class="string">"/home/<span class="variable">$USER</span>/mongodb"</span>       <span class="comment">#MongoDB所在服务器的安装路径</span>
+DBPATH=<span class="string">"<span class="variable">$MDB</span>/data/shard"</span>        <span class="comment">#MongodDB数据文件存放</span>
+RS_DBPATH=<span class="string">"<span class="variable">$MDB</span>/data/replica"</span>   <span class="comment">#MongodDB从库数据文件</span>
+AB_DBPATH=<span class="string">"<span class="variable">$MDB</span>/data/arbiter"</span>   <span class="comment">#MongodDB Arbiter数据文件</span>
+CFGPATH=<span class="string">"<span class="variable">$MDB</span>/data/config"</span>      <span class="comment">#MongodDB Config数据文件</span>
+LOGPATH=<span class="string">"<span class="variable">$MDB</span>/data"</span>             <span class="comment">#MongoDB日志目录</span>
+DBPORT=<span class="string">"25050"</span>                  <span class="comment">#MongoDB主库端口</span>
+RS_DBPORT=<span class="string">"25353"</span>               <span class="comment">#MongoDB从库端口</span>
+AB_DBPORT=<span class="string">"25454"</span>               <span class="comment">#MongoDB Arbiter 端口</span>
+CFGPORT=<span class="string">"25151"</span>                 <span class="comment">#MongoDB Config  端口</span>
+MSPORT=<span class="string">"25252"</span>                  <span class="comment">#MongoDB Mongos 端口</span>
+AUTO_SHARD=<span class="literal">false</span>                <span class="comment">#是否自动shard</span>
+</pre></td></tr></table></figure>
+
+<h3 id="-">管理脚本说明</h3>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="code"><pre>sh proc_start_mongodrs<span class="preprocessor">.sh</span> test  <span class="preprocessor">#使用conf.test.sh</span>
+sh proc_config_rs<span class="preprocessor">.sh</span> test       <span class="preprocessor">#配置mongodb的复本集</span>
+sh proc_start_config<span class="preprocessor">.sh</span> test    <span class="preprocessor">#Shard情况下,启动config</span>
+sh proc_start_mongos<span class="preprocessor">.sh</span> test    <span class="preprocessor">#Shard情况下,启动mongos</span>
+sh proc_config_shards<span class="preprocessor">.sh</span> test   <span class="preprocessor">#Shard情况下,配置shard</span>
+sh proc_stop<span class="preprocessor">.sh</span> test            <span class="preprocessor">#安全关闭mongodb集群</span>
+sh proc_manage_clean<span class="preprocessor">.sh</span> test    <span class="preprocessor">#删除mongodb的数据目录</span>
+</pre></td></tr></table></figure>
+
 
       
     </div>
@@ -102,7 +315,7 @@
   <div class="search">
   <form action="//google.com/search" method="get" accept-charset="utf-8">
     <input type="search" name="q" results="0" placeholder="Search">
-    <input type="hidden" name="q" value="site:yoursite.com">
+    <input type="hidden" name="q" value="site:tullyliu.github.io">
   </form>
 </div>
 
@@ -114,7 +327,11 @@
   <ul class="entry">
     
       <li>
-        <a href="/2014/02/20/hello-world/">Hello World</a>
+        <a href="/2012/07/20/concurrenthashmap/">ConcurrentHashMap的使用技巧</a>
+      </li>
+    
+      <li>
+        <a href="/2011/03/20/mongomgr/">MongoDB集群管理-MongoManager</a>
       </li>
     
   </ul>
@@ -122,6 +339,15 @@
 
 
   
+<div class="widget tag">
+  <h3 class="title">Tags</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/并发/">并发</a><small>1</small></li>
+  
+  </ul>
+</div>
+
 </aside>
     <div class="clearfix"></div>
   </div>
