@@ -3,28 +3,27 @@
 <head>
   <meta charset="utf-8">
   
-  <title>MongoDB集群管理-MongoManager | 写写画画</title>
+  <title>MongoDB集群管理-MongoManager | Tully&#39;s Blog</title>
   <meta name="author" content="Tullyliu">
   
   <meta name="description" content="MongoManager是一组用于管理MongoDB集群启动和配置的Shell脚本
-目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况
-项目位于MongoMangager
+目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况项目位于MongoMangager
 MongoDB集群管理脚本使用说明
 原理
-利用ssh远程操作其">
+利用ssh远程操作其他">
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <meta property="og:title" content="MongoDB集群管理-MongoManager"/>
-  <meta property="og:site_name" content="写写画画"/>
+  <meta property="og:site_name" content="Tully&#39;s Blog"/>
 
   
     <meta property="og:image" content="undefined"/>
   
 
   <link href="/favicon.ico" rel="icon" type="image/x-ico">
-  <link rel="alternate" href="/atom.xml" title="写写画画" type="application/atom+xml">
+  <link rel="alternate" href="/atom.xml" title="Tully&#39;s Blog" type="application/atom+xml">
   <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
   <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
   
@@ -33,8 +32,8 @@ MongoDB集群管理脚本使用说明
 
 <body>
   <header id="header" class="inner"><div class="alignleft">
-  <h1><a href="/">写写画画</a></h1>
-  <h2 class="subtitle"></h2>
+  <h1><a href="/">Tully&#39;s Blog</a></h1>
+  <h2 class="subtitle">写写画画</h2>
 </div>
 <nav id="main-nav" class="alignright">
   <ul>
@@ -71,7 +70,7 @@ MongoDB集群管理脚本使用说明
     <header>
       
         <div class="icon"></div>
-        <time datetime="2011-03-20T07:22:19.000Z"><a href="/2011/03/20/mongomgr/">Mar 20 2011</a></time>
+        <time datetime="2011-03-20T07:22:19.000Z"><a href="/2011/03/20/mongomgr/">3月 20 2011</a></time>
       
       
   
@@ -82,12 +81,11 @@ MongoDB集群管理脚本使用说明
     <div class="entry">
       
         <p>MongoManager是一组用于管理MongoDB集群启动和配置的Shell脚本</p>
-<p>目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况
-项目位于<a href="https://github.com/tullyliu/MongoManager" target="_blank">MongoMangager</a></p>
+<p>目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况<br>项目位于<a href="https://github.com/tullyliu/MongoManager" target="_blank">MongoMangager</a></p>
 <p>MongoDB集群管理脚本使用说明</p>
-<h3 id="-">原理</h3>
+<h3 id="原理">原理</h3>
 <p>利用ssh远程操作其他机器,完成相关操作</p>
-<h3 id="-">准备:</h3>
+<h3 id="准备:">准备:</h3>
 <p>选择主控机,执行以下命令完成ssh key复制</p>
 <figure class="highlight [shell]"><table><tr><td class="gutter"><pre>1
 2
@@ -96,7 +94,7 @@ cat id_dsa.pub | ssh user<span class="comment">@remotehost 'cd .ssh;</span>
 </pre></td></tr></table></figure>
 
 <p>脚本需要利用hostname –i获取服务器各自的ip,请确保各个服务器该命令返回的结果正确性</p>
-<h3 id="-">配置说明</h3>
+<h3 id="配置说明">配置说明</h3>
 <p>配置文件为 common.sh和conf.<em>.sh 其中</em>为任意名字,为后续脚本提供参数</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre>1
 2
@@ -136,7 +134,7 @@ MSPORT=<span class="string">"25252"</span>                  <span class="comment
 AUTO_SHARD=<span class="literal">false</span>                <span class="comment">#是否自动shard</span>
 </pre></td></tr></table></figure>
 
-<h3 id="-">管理脚本说明</h3>
+<h3 id="管理脚本说明">管理脚本说明</h3>
 <figure class="highlight"><table><tr><td class="gutter"><pre>1
 2
 3
@@ -168,11 +166,17 @@ sh proc_manage_clean<span class="preprocessor">.sh</span> test    <span class="p
 </article>
 
 
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+  <div id="ds-thread"/>
+</section>
+
 </div></div>
     <aside id="sidebar" class="alignright">
   <div class="search">
   <form action="//google.com/search" method="get" accept-charset="utf-8">
-    <input type="search" name="q" results="0" placeholder="Search">
+    <input type="search" name="q" results="0" placeholder="搜索">
     <input type="hidden" name="q" value="site:tullyliu.github.io">
   </form>
 </div>
@@ -181,7 +185,7 @@ sh proc_manage_clean<span class="preprocessor">.sh</span> test    <span class="p
 
   
 <div class="widget tag">
-  <h3 class="title">Recent Posts</h3>
+  <h3 class="title">最新文章</h3>
   <ul class="entry">
     
       <li>
@@ -198,7 +202,7 @@ sh proc_manage_clean<span class="preprocessor">.sh</span> test    <span class="p
 
   
 <div class="widget tag">
-  <h3 class="title">Tags</h3>
+  <h3 class="title">标签</h3>
   <ul class="entry">
   
     <li><a href="/tags/并发/">并发</a><small>1</small></li>
@@ -218,6 +222,23 @@ sh proc_manage_clean<span class="preprocessor">.sh</span> test    <span class="p
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script src="/js/jquery.imagesloaded.min.js"></script>
 <script src="/js/gallery.js"></script>
+
+
+
+
+<!-- Duoshuo Comment BEGIN -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tullyliu"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = 'http://static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		|| document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+<!-- Duoshuo Comment END -->
 
 
 

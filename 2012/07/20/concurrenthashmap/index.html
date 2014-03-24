@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>ConcurrentHashMap的使用技巧 | 写写画画</title>
+  <title>ConcurrentHashMap的使用技巧 | Tully&#39;s Blog</title>
   <meta name="author" content="Tullyliu">
   
   <meta name="description" content="在日常开发中,资源池是经常遇到的场景,一种简单的实现是按需创建一个资源,然后放入map中缓存起来,后续使用这个资源时直接从map中获取.
@@ -14,14 +14,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <meta property="og:title" content="ConcurrentHashMap的使用技巧"/>
-  <meta property="og:site_name" content="写写画画"/>
+  <meta property="og:site_name" content="Tully&#39;s Blog"/>
 
   
     <meta property="og:image" content="undefined"/>
   
 
   <link href="/favicon.ico" rel="icon" type="image/x-ico">
-  <link rel="alternate" href="/atom.xml" title="写写画画" type="application/atom+xml">
+  <link rel="alternate" href="/atom.xml" title="Tully&#39;s Blog" type="application/atom+xml">
   <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
   <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
   
@@ -30,8 +30,8 @@
 
 <body>
   <header id="header" class="inner"><div class="alignleft">
-  <h1><a href="/">写写画画</a></h1>
-  <h2 class="subtitle"></h2>
+  <h1><a href="/">Tully&#39;s Blog</a></h1>
+  <h2 class="subtitle">写写画画</h2>
 </div>
 <nav id="main-nav" class="alignright">
   <ul>
@@ -68,7 +68,7 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2012-07-20T07:08:05.000Z"><a href="/2012/07/20/concurrenthashmap/">Jul 20 2012</a></time>
+        <time datetime="2012-07-20T07:08:05.000Z"><a href="/2012/07/20/concurrenthashmap/">7月 20 2012</a></time>
       
       
   
@@ -80,9 +80,7 @@
       
         <p>在日常开发中,资源池是经常遇到的场景,一种简单的实现是按需创建一个资源,然后放入map中缓存起来,后续使用这个资源时直接从map中获取.</p>
 <p>最简单可靠的实现是利用HashedMap+synchronized(或者Lock),这种方式无疑是正确的,但锁的粒度较大,高并发时性能不佳</p>
-<p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性
-参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a>
-主要代码如下</p>
+<p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性<br>参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a><br>主要代码如下</p>
 <figure class="highlight [java]"><table><tr><td class="gutter"><pre>1
 2
 3
@@ -115,22 +113,16 @@
 }
 </pre></td></tr></table></figure>
 
-<p>这种方法直接使用ConcurrentMap,且没有外层的锁,putIfAbsent方法不会重复放入相同key的对象,ConcurrentMap内部实现也保证了内存可见性.
-看起来是基本正确的.而且大部分情况也是可以正常工作的.</p>
+<p>这种方法直接使用ConcurrentMap,且没有外层的锁,putIfAbsent方法不会重复放入相同key的对象,ConcurrentMap内部实现也保证了内存可见性.<br>看起来是基本正确的.而且大部分情况也是可以正常工作的.</p>
 <p>但是这种写法有个致命的问题,那就是</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre>1
 </pre></td><td class="code"><pre><span class="keyword">Record</span> newRec = <span class="keyword">new</span> <span class="keyword">Record</span>(id);
 </pre></td></tr></table></figure>
 
-<p>这个地方在并发情况下可能被多次执行.意味着资源被多次创建.如果这个资源没有什么外部依赖,多次创建倒是没有问题,不过当遇到
-依赖外部资源(文件,socket)时,多次创建就会有报错.</p>
-<p>要避免这种资源的多次创建,可以使用double checked的方式实现.虽然double checked由来已久,且有著名的double checked locking问题
-关于此问题(请参见<a href="http://en.wikipedia.org/wiki/Double-checked_locking" target="_blank">DCL</a> 的产生主要是java内存模型导致的,但是使用volatile可以避免lock的问题
-可能早些时候很多著作里都会提到volatile代价太高,但随着jvm发展(1.5以后),volatile的实现也变得轻量高效,具体的论述可以参见<a href="http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#dcl" target="_blank">jsr-133-faq</a> 
-注意页面里划掉的一大段论述</p>
+<p>这个地方在并发情况下可能被多次执行.意味着资源被多次创建.如果这个资源没有什么外部依赖,多次创建倒是没有问题,不过当遇到<br>依赖外部资源(文件,socket)时,多次创建就会有报错.</p>
+<p>要避免这种资源的多次创建,可以使用double checked的方式实现.虽然double checked由来已久,且有著名的double checked locking问题<br>关于此问题(请参见<a href="http://en.wikipedia.org/wiki/Double-checked_locking" target="_blank">DCL</a> 的产生主要是java内存模型导致的,但是使用volatile可以避免lock的问题<br>可能早些时候很多著作里都会提到volatile代价太高,但随着jvm发展(1.5以后),volatile的实现也变得轻量高效,具体的论述可以参见<a href="http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#dcl" target="_blank">jsr-133-faq</a><br>注意页面里划掉的一大段论述</p>
 <p>Double checked最早是为了解决单例模式产生的,目前java的单例模式已经有更好的实现方式,比如static变量(dcl的wiki描述),比如enum单例(参见effective java 2nd)</p>
-<p>但是在资源池场景仍然可以使用Double checked保证我们资源仅被创建一次同时尽量降低同步的代价
-代码如下</p>
+<p>但是在资源池场景仍然可以使用Double checked保证我们资源仅被创建一次同时尽量降低同步的代价<br>代码如下</p>
 <figure class="highlight [java]"><table><tr><td class="gutter"><pre>1
 2
 3
@@ -173,9 +165,7 @@
 }
 </pre></td></tr></table></figure>
 
-<p>注意此处使用了sychronized,仍然不能使用HashedMap代替ConcurrentHashMap
-因为这种写法有多线程同时访问Map的get和put方法的可能,
-而HashedMap的get和put方法并发环境下也是会出错的.</p>
+<p>注意此处使用了sychronized,仍然不能使用HashedMap代替ConcurrentHashMap<br>因为这种写法有多线程同时访问Map的get和put方法的可能,<br>而HashedMap的get和put方法并发环境下也是会出错的.</p>
 
       
     </div>
@@ -196,11 +186,17 @@
 </article>
 
 
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+  <div id="ds-thread"/>
+</section>
+
 </div></div>
     <aside id="sidebar" class="alignright">
   <div class="search">
   <form action="//google.com/search" method="get" accept-charset="utf-8">
-    <input type="search" name="q" results="0" placeholder="Search">
+    <input type="search" name="q" results="0" placeholder="搜索">
     <input type="hidden" name="q" value="site:tullyliu.github.io">
   </form>
 </div>
@@ -209,7 +205,7 @@
 
   
 <div class="widget tag">
-  <h3 class="title">Recent Posts</h3>
+  <h3 class="title">最新文章</h3>
   <ul class="entry">
     
       <li>
@@ -226,7 +222,7 @@
 
   
 <div class="widget tag">
-  <h3 class="title">Tags</h3>
+  <h3 class="title">标签</h3>
   <ul class="entry">
   
     <li><a href="/tags/并发/">并发</a><small>1</small></li>
@@ -246,6 +242,23 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script src="/js/jquery.imagesloaded.min.js"></script>
 <script src="/js/gallery.js"></script>
+
+
+
+
+<!-- Duoshuo Comment BEGIN -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tullyliu"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = 'http://static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		|| document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+<!-- Duoshuo Comment END -->
 
 
 
