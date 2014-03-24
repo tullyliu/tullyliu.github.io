@@ -8,7 +8,7 @@
   
   <meta name="description" content="在日常开发中,资源池是经常遇到的场景,一种简单的实现是按需创建一个资源,然后放入map中缓存起来,后续使用这个资源时直接从map中获取.
 最简单可靠的实现是利用HashedMap+synchronized(或者Lock),这种方式无疑是正确的,但锁的粒度较大,高并发时性能不佳
-改进的一种典型思路是利">
+改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性参见correct-use-of-concurrenthashmap">
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -80,7 +80,7 @@
       
         <p>在日常开发中,资源池是经常遇到的场景,一种简单的实现是按需创建一个资源,然后放入map中缓存起来,后续使用这个资源时直接从map中获取.</p>
 <p>最简单可靠的实现是利用HashedMap+synchronized(或者Lock),这种方式无疑是正确的,但锁的粒度较大,高并发时性能不佳</p>
-<p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性<br>参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a><br>主要代码如下</p>
+<p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性<br>参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a><br><a id="more"></a><br>主要代码如下</p>
 <figure class="highlight [java]"><table><tr><td class="gutter"><pre>1
 2
 3
@@ -188,8 +188,8 @@
 
 
 <section id="comment">
-  <h1 class="title">留言</h1>
-  <div id="ds-thread"/>
+  <h2 class="title">评论</h2>
+  <div class="ds-thread"></div>
 </section>
 
 </div></div>
@@ -230,6 +230,8 @@
   </ul>
 </div>
 
+
+  <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=2&isTitle=0&noborder=0&isWeibo=1&isFans=0&uid=1719499353&verifier=49272b1a&dpc=1"></iframe>
 </aside>
     <div class="clearfix"></div>
   </div>
