@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>并发 | Tully&#39;s Blog</title>
+  <title>归档：2014/3 | Tully&#39;s Blog</title>
   <meta name="author" content="Tullyliu">
   
   
@@ -20,6 +20,7 @@
   <link rel="alternate" href="/atom.xml" title="Tully&#39;s Blog" type="application/atom+xml">
   <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
   <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
   
 </head>
 
@@ -47,7 +48,7 @@
 </header>
   <div id="content" class="inner">
     <div id="main-col" class="alignleft"><div id="wrapper">
-<h2 class="archive-title tag">并发</h2>
+<h2 class="archive-title">2014/3</h2>
 
 
   
@@ -69,26 +70,24 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2012-07-20T07:08:05.000Z"><a href="/2012/07/20/concurrenthashmap/">7月 20 2012</a></time>
+        <time datetime="2014-03-24T15:56:21.000Z"><a href="/2014/03/24/writing-sequence-diagram/">3月 24 2014</a></time>
       
       
   
-    <h1 class="title"><a href="/2012/07/20/concurrenthashmap/">ConcurrentHashMap的使用技巧</a></h1>
+    <h1 class="title"><a href="/2014/03/24/writing-sequence-diagram/">用文本方式绘制顺序图</a></h1>
   
 
     </header>
     <div class="entry">
       
-        <p>在日常开发中,资源池是经常遇到的场景,一种简单的实现是按需创建一个资源,然后放入map中缓存起来,后续使用这个资源时直接从map中获取.</p>
-<p>最简单可靠的实现是利用HashedMap+synchronized(或者Lock),这种方式无疑是正确的,但锁的粒度较大,高并发时性能不佳</p>
-<p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性<br>参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a><br>
+        <p>UML Sequence Diagram是非常重要的设计工具<br>除了可以在各种UML工具里绘制顺序图<br>还可以借助<a href="http://www.websequencediagrams.com" target="_blank">websequencediagrams</a>实现文本化的顺序图生成<br>
       
     </div>
     <footer>
       
         
           <div class="alignleft">
-            <a href="/2012/07/20/concurrenthashmap/#more" class="more-link">Read More</a>
+            <a href="/2014/03/24/writing-sequence-diagram/#more" class="more-link">Read More</a>
           </div>
         
         
@@ -126,6 +125,10 @@
   <ul class="entry">
     
       <li>
+        <a href="/2014/03/24/writing-sequence-diagram/">用文本方式绘制顺序图</a>
+      </li>
+    
+      <li>
         <a href="/2012/07/20/concurrenthashmap/">ConcurrentHashMap的使用技巧</a>
       </li>
     
@@ -142,13 +145,19 @@
   <h3 class="title">标签</h3>
   <ul class="entry">
   
-    <li><a href="/tags/并发/">并发</a><small>1</small></li>
+    <li><a href="/tags/concurrent/">concurrent</a><small>1</small></li>
+  
+    <li><a href="/tags/mongodb/">mongodb</a><small>1</small></li>
+  
+    <li><a href="/tags/toolchain/">toolchain</a><small>1</small></li>
   
   </ul>
 </div>
 
 
-  <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=2&isTitle=0&noborder=0&isWeibo=1&isFans=0&uid=1719499353&verifier=49272b1a&dpc=1"></iframe>
+  <div class="widget tag">
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=2&isTitle=0&noborder=0&isWeibo=1&isFans=0&uid=1719499353&verifier=49272b1a&dpc=1"></iframe>
+</div>
 </aside>
     <div class="clearfix"></div>
   </div>
@@ -189,6 +198,9 @@ var duoshuoQuery = {short_name:"tullyliu"};
   $('.fancybox').fancybox();
 })(jQuery);
 </script>
+
+
+<script type="text/javascript" src="http://www.websequencediagrams.com/service.js"></script>
 
 </body>
 </html>

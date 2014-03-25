@@ -4,7 +4,7 @@
   <subtitle><![CDATA[写写画画]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://tullyliu.github.io/"/>
-  <updated>2014-03-24T10:33:12.622Z</updated>
+  <updated>2014-03-25T05:32:21.072Z</updated>
   <id>http://tullyliu.github.io/</id>
   
   <author>
@@ -15,11 +15,57 @@
   <generator uri="http://zespia.tw/hexo/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[用文本方式绘制顺序图]]></title>
+    <link href="http://tullyliu.github.io/2014/03/24/writing-sequence-diagram/"/>
+    <id>http://tullyliu.github.io/2014/03/24/writing-sequence-diagram/</id>
+    <published>2014-03-24T15:56:21.000Z</published>
+    <updated>2014-03-25T05:31:40.000Z</updated>
+    <content type="html"><![CDATA[<p>UML Sequence Diagram是非常重要的设计工具<br>除了可以在各种UML工具里绘制顺序图<br>还可以借助<a href="http://www.websequencediagrams.com" target="_blank">websequencediagrams</a>实现文本化的顺序图生成<br><a id="more"></a></p>
+<p>新建一个html文件,粘贴如下代码</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="code"><pre><span class="doctype">&lt;!doctype html&gt;</span>
+<span class="tag">&lt;<span class="title">html</span>&gt;</span>
+<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;<span class="title">div</span> <span class="attribute">class</span>=<span class="value">wsd</span> <span class="attribute">wsd_style</span>=<span class="value">"rose"</span> &gt;</span><span class="tag">&lt;<span class="title">pre</span>&gt;</span>
+title Authentication Sequence
+
+Alice-&gt;Bob: Authentication Request
+note right of Bob: Bob thinks about it
+Bob-&gt;Alice: Authentication Response
+<span class="tag">&lt;/<span class="title">pre</span>&gt;</span><span class="tag">&lt;/<span class="title">div</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;<span class="title">script</span> <span class="attribute">type</span>=<span class="value">"text/javascript"</span> <span class="attribute">src</span>=<span class="value">"http://www.websequencediagrams.com/service.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">html</span>&gt;</span>
+</pre></td></tr></table></figure>
+
+<p>用浏览器打开即可预览</p>
+<p><img src="http://tullyliu.qiniudn.com/blogimg_cdraw.png" alt="示例"></p>
+<p>导出图片直接另存图片即可<br>websequecediagrams的语法比较简单,可以参考<a href="https://www.websequencediagrams.com/examples.html" target="_blank">examples</a></p>
+]]></content>
+    <summary type="html"><![CDATA[<p>UML Sequence Diagram是非常重要的设计工具<br>除了可以在各种UML工具里绘制顺序图<br>还可以借助<a href="http://www.websequencediagrams.com" target="_blank">websequencediagrams</a>实现文本化的顺序图生成<br>]]></summary>
+    
+      <category term="toolchain" scheme="http://tullyliu.github.io/tags/toolchain/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[ConcurrentHashMap的使用技巧]]></title>
     <link href="http://tullyliu.github.io/2012/07/20/concurrenthashmap/"/>
     <id>http://tullyliu.github.io/2012/07/20/concurrenthashmap/</id>
     <published>2012-07-20T07:08:05.000Z</published>
-    <updated>2014-03-24T09:08:04.000Z</updated>
+    <updated>2014-03-25T05:31:54.000Z</updated>
     <content type="html"><![CDATA[<p>在日常开发中,资源池是经常遇到的场景,一种简单的实现是按需创建一个资源,然后放入map中缓存起来,后续使用这个资源时直接从map中获取.</p>
 <p>最简单可靠的实现是利用HashedMap+synchronized(或者Lock),这种方式无疑是正确的,但锁的粒度较大,高并发时性能不佳</p>
 <p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性<br>参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a><br><a id="more"></a><br>主要代码如下</p>
@@ -113,7 +159,7 @@
 <p>最简单可靠的实现是利用HashedMap+synchronized(或者Lock),这种方式无疑是正确的,但锁的粒度较大,高并发时性能不佳</p>
 <p>改进的一种典型思路是利用JUC里的并发工具ConcurrentHashMap,降低锁粒度,提高并发性<br>参见<a href="http://dmy999.com/article/34/correct-use-of-concurrenthashmap" target="_blank">correct-use-of-concurrenthashmap</a><br>]]></summary>
     
-      <category term="并发" scheme="http://tullyliu.github.io/tags/%E5%B9%B6%E5%8F%91/"/>
+      <category term="concurrent" scheme="http://tullyliu.github.io/tags/concurrent/"/>
     
   </entry>
   
@@ -122,7 +168,7 @@
     <link href="http://tullyliu.github.io/2011/03/20/mongomgr/"/>
     <id>http://tullyliu.github.io/2011/03/20/mongomgr/</id>
     <published>2011-03-20T07:22:19.000Z</published>
-    <updated>2014-03-24T09:08:16.000Z</updated>
+    <updated>2014-03-25T05:32:04.000Z</updated>
     <content type="html"><![CDATA[<p>MongoManager是一组用于管理MongoDB集群启动和配置的Shell脚本</p>
 <p>目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况<br>项目位于<a href="https://github.com/tullyliu/MongoManager" target="_blank">MongoMangager</a></p>
 <p>MongoDB集群管理脚本使用说明<br><a id="more"></a></p>
@@ -198,6 +244,8 @@ sh proc_manage_clean<span class="preprocessor">.sh</span> test    <span class="p
     <summary type="html"><![CDATA[<p>MongoManager是一组用于管理MongoDB集群启动和配置的Shell脚本</p>
 <p>目前支持Primary Secondary Arbiter的配置启动,包括Shard和单独ReplicaSet的情况<br>项目位于<a href="https://github.com/tullyliu/MongoManager" target="_blank">MongoMangager</a></p>
 <p>MongoDB集群管理脚本使用说明<br>]]></summary>
+    
+      <category term="mongodb" scheme="http://tullyliu.github.io/tags/mongodb/"/>
     
   </entry>
   
