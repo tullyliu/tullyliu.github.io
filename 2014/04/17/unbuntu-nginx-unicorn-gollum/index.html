@@ -1,0 +1,446 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Ubuntu12.04下使用Nginx+Unicorn搭建Gollum Wiki | Tully&#39;s Blog</title>
+  <meta name="author" content="Tullyliu">
+  
+  <meta name="description" content="Gollum是一个github开源的wiki软件,非常适合做个人和小组的知识管理本文主要介绍在Ubuntu12.04如何快速的安装部署一个gollum">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Ubuntu12.04下使用Nginx+Unicorn搭建Gollum Wiki"/>
+  <meta property="og:site_name" content="Tully&#39;s Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="Tully&#39;s Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-49351848-1', 'tullyliu.github.io');
+  ga('send', 'pageview');
+
+</script>
+
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?b8fd20191225a4100e2ced472caad6a7";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">Tully&#39;s Blog</a></h1>
+  <h2 class="subtitle">写写画画</h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">首页</a></li>
+    
+      <li><a href="/archives">归档</a></li>
+    
+      <li><a href="/about">关于</a></li>
+    
+      <li><a href="/atom.xml">RSS</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-04-17T09:04:23.000Z"><a href="/2014/04/17/unbuntu-nginx-unicorn-gollum/">4月 17 2014</a></time>
+      
+      
+  
+    <h2 class="title">Ubuntu12.04下使用Nginx+Unicorn搭建Gollum Wiki</h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>Gollum是一个github开源的wiki软件,非常适合做个人和小组的知识管理<br>本文主要介绍在Ubuntu12.04如何快速的安装部署一个gollum<br><a id="more"></a></p>
+<h2 id="安装必备的软件">安装必备的软件</h2>
+<h3 id="安装Nginx">安装Nginx</h3>
+<h4 id="apt安装">apt安装</h4>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+</pre></td><td class="code"><pre><span class="built_in">sudo</span> apt-get install python-software-properties
+<span class="built_in">sudo</span> -E add-apt-repository ppa:nginx/stable <span class="comment">###使用 sudo 参数 -E 使得 root 用户可以使用普通用户下的环境变量，包括代理设置。</span>
+<span class="built_in">sudo</span> apt-get update
+<span class="built_in">sudo</span> apt-get install nginx
+</pre></td></tr></table></figure>
+
+<h4 id="启停">启停</h4>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+</pre></td><td class="code"><pre>sudo /etc/init.d/nginx start<span class="localvars">|stop|restart</span>
+</pre></td></tr></table></figure>
+
+<h3 id="安装ruby环境,使用RVM">安装ruby环境,使用RVM</h3>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="code"><pre>#清理环境
+<span class="char">$ </span>sudo apt-get remove --purge ruby-rvm ruby
+<span class="char">$ </span>sudo rm -rf /usr/share/ruby-rvm /etc/rmvrc /etc/profile.d/rvm.sh
+<span class="char">$ </span>rm -rf ~/.rvm* ~/.gem/ ~/.bundle*
+#安装rvm
+<span class="char">$ </span>curl -<span class="class">L</span> <span class="method">https:</span>//get.rvm.io | bash -s stable
+<span class="char">$ </span>echo <span class="string">'[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"'</span> &gt;&gt;~/.bashrc
+<span class="char">$ </span>source ~/.bashrc
+<span class="char">$ </span>rvm -v
+#替换源
+<span class="char">$ </span>sed -i -e <span class="string">'s/ftp\.ruby-lang\.org\/pub\/ruby/ruby\.taobao\.org\/mirrors\/ruby/g'</span> ~/.rvm/config/db
+#安装ruby
+<span class="char">$ </span>rvm pkg install readline openssl
+<span class="char">$ </span>rvm install <span class="number">1.9</span><span class="number">.3</span>
+<span class="char">$ </span>rvm use <span class="number">1.9</span><span class="number">.3</span> --default
+<span class="char">$ </span>ruby -v
+</pre></td></tr></table></figure>
+
+<h3 id="安装Unicorn和Gollum">安装Unicorn和Gollum</h3>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+</pre></td><td class="code"><pre>gem <span class="keyword">install</span> unicorn
+gem <span class="keyword">install</span> gollum
+<span class="comment"># gollum markdown</span>
+gem <span class="keyword">install</span> redcarpet
+</pre></td></tr></table></figure>
+
+<h2 id="配置Unicorn和Nginx">配置Unicorn和Nginx</h2>
+<h3 id="配置Unicorn">配置Unicorn</h3>
+<h4 id="准备目录">准备目录</h4>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+</pre></td><td class="code"><pre><span class="variable">$ </span>mkdir -p ~<span class="regexp">/wiki/tmp</span><span class="regexp">/sockets ~/wiki</span><span class="regexp">/tmp/pids</span> ~<span class="regexp">/wiki/log</span> ~<span class="regexp">/wiki/config</span> ~<span class="regexp">/wiki/content</span>
+<span class="variable">$ </span>cd ~<span class="regexp">/wiki/content</span>
+<span class="variable">$ </span>git init
+</pre></td></tr></table></figure>
+
+<h4 id="添加unicorn_config">添加unicorn config</h4>
+<p>~/wiki/config/unicorn.rb如下</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+</pre></td><td class="code"><pre><span class="comment"># ~/wiki/config/unicorn.rb</span>
+
+<span class="comment"># set path to app that will be used to configure unicorn,</span>
+<span class="comment"># note the trailing slash in this example</span>
+<span class="variable">@dir</span> = <span class="string">"/home/user/wiki/"</span>
+
+worker_processes <span class="number">2</span>
+working_directory <span class="variable">@dir</span>
+
+timeout <span class="number">30</span>
+
+<span class="comment"># Specify path to socket unicorn listens to,</span>
+<span class="comment"># we will use this in our nginx.conf later</span>
+listen <span class="string">"<span class="subst">#{<span class="variable">@dir</span>}</span>tmp/sockets/unicorn.sock"</span>, <span class="symbol">:backlog</span> =&gt; <span class="number">64</span>
+
+<span class="comment"># Set process id path</span>
+pid <span class="string">"<span class="subst">#{<span class="variable">@dir</span>}</span>tmp/pids/unicorn.pid"</span>
+
+<span class="comment"># Set log file paths</span>
+stderr_path <span class="string">"<span class="subst">#{<span class="variable">@dir</span>}</span>log/unicorn.stderr.log"</span>
+stdout_path <span class="string">"<span class="subst">#{<span class="variable">@dir</span>}</span>log/unicorn.stdout.log"</span>
+</pre></td></tr></table></figure>
+
+<h4 id="添加config-ru">添加config.ru</h4>
+<p>~/wiki/config/config.ru如下</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></td><td class="code"><pre><span class="comment">#!/usr/bin/env ruby</span>
+<span class="keyword">require</span> <span class="string">'rubygems'</span>
+<span class="keyword">require</span> <span class="string">'gollum/app'</span>
+
+gollum_path = <span class="constant">File</span>.expand_path(<span class="string">'/home/user/wiki/content'</span>) <span class="comment"># CHANGE THIS TO POINT TO YOUR OWN WIKI REPO</span>
+<span class="constant">Precious::App</span>.set(<span class="symbol">:gollum_path</span>, gollum_path)
+<span class="constant">Precious::App</span>.set(<span class="symbol">:default_markup</span>, <span class="symbol">:markdown</span>) <span class="comment"># set your favorite markup language</span>
+<span class="constant">Precious::App</span>.set(<span class="symbol">:wiki_options</span>, {<span class="symbol">:universal_toc</span> =&gt; <span class="keyword">false</span>})
+run <span class="constant">Precious::App</span>
+</pre></td></tr></table></figure>
+
+<h4 id="启动Unicorn">启动Unicorn</h4>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+</pre></td><td class="code"><pre>$ unicorn -D -c /home/user/wiki/config/unicorn<span class="preprocessor">.rb</span> /home/user/wiki/config/config<span class="preprocessor">.ru</span>
+</pre></td></tr></table></figure>
+
+<h3 id="配置Nignx">配置Nignx</h3>
+<h4 id="在/etc/nginx/sites-available目录下新建wiki文件,同时在/etc/nginx/sites-enable下建立一个符号链接">在/etc/nginx/sites-available目录下新建wiki文件,同时在/etc/nginx/sites-enable下建立一个符号链接</h4>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+</pre></td><td class="code"><pre>$ touch /etc/nginx/sites-available/wiki
+<span class="comment"># create symbolic link</span>
+$ ln <span class="operator">-s</span> &lt;<span class="built_in">source</span>&gt; &lt;destination&gt;
+$ ln <span class="operator">-s</span> /etc/nginx/sites-available/wiki /etc/nginx/sites-enabled/wiki
+</pre></td></tr></table></figure>
+
+<h4 id="编辑nginx的site配置文件wiki">编辑nginx的site配置文件wiki</h4>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+</pre></td><td class="code"><pre><span class="comment"># /etc/nginx/sites-enabled/wiki</span>
+
+upstream unicorn {  
+  server unix:<span class="regexp">/home/user</span><span class="regexp">/wiki/tmp</span><span class="regexp">/sockets/unicorn</span>.sock;
+}
+
+server {  
+  <span class="keyword">listen</span> <span class="number">80</span>;
+  server_name mydomain.com;
+  access_log /var/<span class="keyword">log</span>/nginx/wiki_access.<span class="keyword">log</span>;
+  error_log  /var/<span class="keyword">log</span>/nginx/wiki_error.<span class="keyword">log</span>;
+
+  location / {
+    proxy_pass http:<span class="regexp">//unicorn</span>;
+    proxy_set_header Host <span class="variable">$host</span>;
+    proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;
+    proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;
+  }
+}
+</pre></td></tr></table></figure>
+
+<p>注意</p>
+<ul>
+<li>servername 如果是有真实domain填真实的,如果没有的话,可以填充localhost,同时把/etc/nginx/sites-available/default 里servername改成别的</li>
+<li>upstream的unicorn sock需要跟之前unicorn config里的socket配置保持一致</li>
+</ul>
+<h4 id="重启Nginx">重启Nginx</h4>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+</pre></td><td class="code"><pre>$ <span class="built_in">sudo</span> service nginx restart
+或者
+$ <span class="built_in">sudo</span> service nginx start
+</pre></td></tr></table></figure>
+
+<h2 id="参考">参考</h2>
+<p><a href="http://ruby-china.org/wiki/install-rails-on-ubuntu-12-04-server" target="_blank">在 Ubuntu 12.04 Server 上安装部署 Ruby on Rails 应用</a><br><a href="http://imcn.me/html/y2012/11833.html" target="_blank">ubuntu 12.04 安装 nginx+php+mysql web服务器</a><br><a href="http://bytelapse.com/running-gollum-on-digitalocean-with-unicorn-and-nginx/" target="_blank">Running Gollum on DigitalOcean With Unicorn and Nginx </a></p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+  
+  <div class="tags">
+    <a href="/tags/gollum/">gollum</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+<section id="comment">
+  <h2 class="title">评论</h2>
+  <div class="ds-thread"></div>
+</section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:tullyliu.github.io">
+  </form>
+</div>
+
+  
+
+  
+<div class="widget tag">
+  <h3 class="title">最新文章</h3>
+  <ul class="entry">
+    
+      <li>
+        <a href="/2014/04/17/unbuntu-nginx-unicorn-gollum/">Ubuntu12.04下使用Nginx+Unicorn搭建Gollum Wiki</a>
+      </li>
+    
+      <li>
+        <a href="/2014/03/24/writing-sequence-diagram/">用文本方式绘制顺序图</a>
+      </li>
+    
+      <li>
+        <a href="/2012/07/20/concurrenthashmap/">ConcurrentHashMap的使用技巧</a>
+      </li>
+    
+      <li>
+        <a href="/2011/03/20/mongomgr/">MongoDB集群管理-MongoManager</a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+<div class="widget tag">
+  <h3 class="title">标签</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/concurrent/">concurrent</a><small>1</small></li>
+  
+    <li><a href="/tags/gollum/">gollum</a><small>1</small></li>
+  
+    <li><a href="/tags/mongodb/">mongodb</a><small>1</small></li>
+  
+    <li><a href="/tags/toolchain/">toolchain</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=2&isTitle=0&noborder=0&isWeibo=1&isFans=0&uid=1719499353&verifier=49272b1a&dpc=1"></iframe>
+</div>
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2014 Tullyliu
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<!-- Duoshuo Comment BEGIN -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"tullyliu"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = 'http://static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		|| document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+</script>
+<!-- Duoshuo Comment END -->
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+<script type="text/javascript" src="http://www.websequencediagrams.com/service.js"></script>
+
+</body>
+</html>
